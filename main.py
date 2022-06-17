@@ -10,6 +10,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.responses import RedirectResponse
 from pydantic import BaseModel
 import time
+import os
 
 class Baseparm(BaseModel):
     email:str
@@ -18,7 +19,6 @@ class Baseparm(BaseModel):
 
 #Initialing framework
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
@@ -27,38 +27,56 @@ templates = Jinja2Templates(directory="templates")
 
 d = {'uname':'01@gmail.com',"passwd":'01'}
 
-# I have stored user logged in details in details.json file with their 
+bjson = {}
+
+# I have stored user logged in details in bjson dictionary file with their 
 # logged in device, ip, browser and logged in time details.
 # Here these two funtions are used to read the 
 ## details of browsers that are logged in with same account
 ## and another one is used to update json file after logout
 
-def read():
-    f = open('details.json','r+')
-    bjson = json.load(f)
-    f.close()
+'''def read():
+
+    try:
+        f = open('details.json','r+')
+        bjson = json.load(f)
+        f.close()
+    except:
+        f = open('details.json','w+')
+        bjson={}
+        json.dump(bjson,f)
+        f.close()
     return bjson
 
 def dump(bjson):
     f = open('details.json','w+')
     json.dump(bjson,f)
-    f.close()
+    f.close()'''
 
 
 ## root route
 @app.get("/",response_class=HTMLResponse)
 async def read_item(request: Request):
 
+    global bjson
+
+
     ## reading logged in browser details and 
     ## check if present cookies matched with logged in details or not.
     ## if found load dashboard otherwise redirect to index.html after setting new cookies
 
-    bjson = read()
+
+
+    #f = open('details.json','w+')
+    #bjson = json.load(f)
+    #f.close()
+    #return f"<h1>123{'bjson'}</h1>"
 
     if request.headers.get('cookie') is not None:
         if request.headers.get('cookie') in bjson.keys():
             return templates.TemplateResponse("dashboard.html",{'request':request})
     #return templates.TemplateResponse("index.html",{'request':request})
+    #return templates.TemplateResponse("dashboard.html",{'request':request})
     response = RedirectResponse(url="/index.html")
     response.set_cookie(
             "authorization",
@@ -70,7 +88,7 @@ async def read_item(request: Request):
 
 @app.get("/index.html", response_class=HTMLResponse)
 async def indexhtml(request: Request):
-    bjson = read()
+    #bjson = read()
     
     if request.headers.get('cookie') is not None:
         if request.headers.get('cookie') in bjson.keys():
@@ -82,7 +100,7 @@ async def indexhtml(request: Request):
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
-    bjson = read()
+    #bjson = read()
     if request.headers.get('cookie') is not None:
         if request.headers.get('cookie') in bjson.keys():
             return templates.TemplateResponse("dashboard.html",{'request':request})
@@ -98,17 +116,18 @@ async def dashboard(request: Request):
 ## route used to fetch data to show logged in browser details in dashboard.html
 @app.get("/data")
 async def fetchdata():
-    bjson = read()
+    #bjson = read()
     return {"l":list(bjson.values())}
 
 ## login route , requests takes json data contains username and pass
 ## if post data matched with sample credentials 
-## then dump to details.json of ip, time, os, browser's details of request.
+## then dump to details dictionary of ip, time, os, browser's details of request.
 @app.post("/login")
 async def login(request: Request, baseparm : Baseparm):
+    global bjson
     req_info = baseparm
     if (req_info.email == d['uname'] and req_info.passwd == d['passwd']):
-        bjson = read()
+        #bjson = read()
         ## get user agents from request headers
         s = request.headers.get('user-agent')
         os_ = s[s.find('(')+1:s.find(')')]
@@ -120,7 +139,7 @@ async def login(request: Request, baseparm : Baseparm):
                     "OS": str(os_).split("; ")[1],
                     "Browser" : s.split(" ")[-1]
                 }
-        dump(bjson)
+        #dump(bjson)
         
         # if loggedin correctly, then send suceess as 1
         return {"login":"1"}
@@ -131,19 +150,20 @@ async def login(request: Request, baseparm : Baseparm):
 ## logout route used to logout other sessions used timestamp
 @app.get("/logout/{t}")
 def logout(t, request: Request):
-    bjson = read()
+    global bjson
+    #bjson = read()
     new = {}
 
-## if logout present session send none to user to redirect index.html
-    if request.headers.get('cookie') not in list(bjson.keys()):
-        return {"l":[None]}
+    ## if logout present session send none to user to redirect index.html
     ## otherwise remove logged in session which contains specific timestamp
     for i,j in bjson.items():
         if j['time'] == t:
             continue
         new[i] = j
-    dump(new)
+    bjson = new
 
     ## sending updated session details to the browser
-    if bjson[request.headers.get('cookie')] in list(new.keys()):
+    if request.headers.get('cookie') in list(new.keys()):
         return {"l":list(new.values())}
+    else:
+        return {"l":[None]}
