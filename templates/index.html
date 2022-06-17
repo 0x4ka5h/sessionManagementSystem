@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+    <script>
+        function validate(){
+            username = document.getElementById('uname').value;
+            passwd = document.getElementById('passwd').value;
+
+            fetch('/login',{
+                method: 'post',
+                headers: {
+                    "Content-type": "application/json",
+                    "Cookie" : document.cookie
+                },
+                body: JSON.stringify({
+                    'email':username,
+                    'passwd':passwd,
+                }),
+                redirect: "follow",
+                credentials: "same-origin"
+                }).then(res => res.json())
+                    .then((out) => {
+                    l = out['login']
+                    if (l=="0"){
+                        alert('login validation failed')
+                    }else{
+                        location.replace("/dashboard")
+                    }
+                    console.log(l)
+                }).catch(err => console.error(err));
+            }
+
+    </script>
+    <style>
+        input[type=email], select {
+            /*width: 30%;*/
+            padding: 12px 20px;
+            margin-top: 10px;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        input[type=password], select {
+            /*width: 30%;*/
+            padding: 12px 20px;
+            
+            /*margin: 8px 0;*/
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button[id=post-id] {
+            width: 30%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        div {
+            width: 30%;
+            border-radius: 5px;
+            background-color: #524848;
+            padding: 10px;
+        }
+
+    </style>
+    <body>
+
+        <center>
+            <div>
+                <fieldset>
+                <!--<label for="fname">Username: </label><br/>-->
+                <input type="email" id="uname" name="name" placeholder="Email"><br /><br />
+            
+                <!--<label for="lname">Password: </label><br />-->
+                <input type="password" id="passwd" name="passwd" placeholder="Password"> <br /> <br/>
+                
+                <button id="post-id" onclick="validate()">Submit</button>
+                </fieldset>
+            </div>
+        </center>
+    </body>
+</html>
+
+

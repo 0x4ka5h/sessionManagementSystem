@@ -1,0 +1,124 @@
+<html><head>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4/swagger-ui.css">
+    <title>Dashboard</title>
+    </head>
+    <script>
+        let l = []
+        let count
+
+        function dataFetch(l){
+            count = 0;
+            
+            console.log(l)
+            var d=""
+            l.forEach(e=>{
+                inHTML = '<div class="opblock-section">\<div class="opblock-section-header">\
+                            <div class="tab-header">\<div class="tab-item active">\
+                                <h4 class="opblock-title"><span>IP :'+l[count].ip+'</span></h4>\
+                             </div>\</div>\
+                            <div class="try-out"><button class="btn try-out__btn" id='+l[count].ip+' onclick="logoutCall('+count+')"> Log Out </button></div>\
+                            </div>\<div >\<div>\
+                                <table style="margin-left: 10px ;"><tr><td> Logged time :'+l[count].time+'</td><td> Browser :'+l[count].Browser+'</td><td> Operating System : '+l[count].OS+'</td></tr></table>\
+                            </div>\</div>\</div>';
+                document.getElementById('activites').innerHTML = d+inHTML;
+                d = d + inHTML;
+                count+=1;
+            })
+        }
+
+        fetch('/data')
+            .then(res => res.json())
+            .then((out) => {
+                l = out['l']
+                dataFetch(l);
+        }).catch(err => console.error(err));
+
+        
+        function logoutCall(index){
+            
+            fetch('/logout/'+l[index].time)
+                .then(res => res.json())
+                .then((out) => {
+                    l = out['l']
+                    if (l.length==0 || l[0]==null){
+                        location.replace("/");
+                    }else{
+                        dataFetch(l);
+                    }
+            }).catch(err => console.error(err));
+        }
+
+    </script>
+
+    <body data-new-gr-c-s-check-loaded="8.899.0" data-gr-ext-installed="" data-new-gr-c-s-loaded="8.899.0">
+        <div id="swagger-ui">
+            <div class="swagger-ui">
+               <div>
+                  <div class="information-container wrapper">
+                     <section class="block col-12">
+                        <div>
+                           <div class="info">
+                              <hgroup class="main">
+                                 <h2 class="title">
+                                    Hello {Name}
+                                 </h2>
+                              </hgroup>
+                              <div class="description"></div>
+                           </div>
+                        </div>
+                     </section>
+                  </div>
+                  <div></div>
+                  <div class="wrapper">
+                     <section class="block col-12 block-desktop col-12-desktop">
+                        <div>
+                           <span>
+                              <div class="opblock-tag-section is-open">
+                                 <h3 class="opblock-tag no-desc" id="operations-tag-default" data-tag="default" data-is-open="true">
+                                    Your account logged in Activity
+                                 </h3>
+                                 <div class="no-margin">
+                                    <div class="operation-tag-content">
+                                       <span>
+                                          <div class="opblock opblock-get is-open" id="operations-default-read_item__get">
+                                             <div class="no-margin" id="activites">
+                                               <div class="opblock-section">
+                                                    <div class="opblock-section-header">
+                                                       <div class="tab-header">
+                                                          <div class="tab-item active">
+                                                             <h4 class="opblock-title"><span>IP : {ip}</span></h4>
+                                                          </div>
+                                                       </div>
+                                                       <div class="try-out"><button class="btn try-out__btn"> Log Out </button></div>
+                                                    </div>
+                                                    <div >
+                                                       <div>
+                                                          <table style="margin-left: 10px ;">
+                                                              <tr>
+                                                                  <td> Logged time : {}</td>
+                                                                  <td> Browser : {}</td>
+                                                                  <td> Operating System : {}</td>
+                                                              </tr>
+                                                          </table>
+                                                       </div>
+                                                    </div>
+                                                 </div>
+                                             </div>
+                                          </div>
+                                       </span>
+                                    </div>
+                                 </div>
+                              </div>
+                           </span>
+                        </div>
+                     </section>
+                  </div>
+                  <div class="wrapper">
+                     <section class="block col-12 block-desktop col-12-desktop"></section>
+                  </div>
+               </div>
+            </div>
+         </div>
+         
+    
+    </body>
